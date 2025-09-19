@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teddy's Birthday Balloon Pop Game!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3);
+            background-size: 300% 300%;
+            animation: gradientShift 8s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .game-area {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            min-height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            background: linear-gradient(135deg, #ff9ff3, #54a0ff);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .balloon {
+            position: absolute;
+            width: 60px;
+            height: 80px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .balloon:hover {
+            transform: scale(1.1);
+        }
+
+        .balloon::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 20px;
+            background: #666;
+        }
+
+        .balloon.red { background: linear-gradient(135deg, #ff6b6b, #ff4757); }
+        .balloon.blue { background: linear-gradient(135deg, #45b7d1, #3742fa); }
+        .balloon.green { background: linear-gradient(135deg, #96ceb4, #2ed573); }
+        .balloon.yellow { background: linear-gradient(135deg, #feca57, #ff9f43); }
+        .balloon.purple { background: linear-gradient(135deg, #ff9ff3, #a55eea); }
+        .balloon.orange { background: linear-gradient(135deg, #ff9f43, #ff6348); }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .pop-effect {
+            position: absolute;
+            pointer-events: none;
+            font-size: 2rem;
+            color: #ff6b6b;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: pop-animation 1s ease-out forwards;
+        }
+
+        @keyframes pop-animation {
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn.restart {
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        .confetti:nth-child(2n) { background: #4ecdc4; }
+        .confetti:nth-child(3n) { background: #feca57; }
+        .confetti:nth-child(4n) { background: #ff9ff3; }
+        .confetti:nth-child(5n) { background: #96ceb4; }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .back-link {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 15px;
+            display: inline-block;
+            text-decoration: none;
+            color: #ff6b6b;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .score-item { font-size: 1.2rem; padding: 10px 15px; }
+            .balloon { width: 50px; height: 65px; }
+            .btn { font-size: 1rem; padding: 12px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎈 Teddy's Birthday Balloon Pop! 🎈</h1>
+            <p>Pop the balloons to celebrate Teddy's 6th birthday!</p>
+        </div>
+
+        <div class="instructions">
+            <strong>How to Play:</strong> Click or tap the floating balloons to pop them! Try to pop as many as you can. Each balloon gives you points and birthday magic! ✨
+        </div>
+
+        <div class="score-board">
+            <div class="score-item">Score: <span id="score">0</span></div>
+            <div class="score-item">Balloons Popped: <span id="popped">0</span></div>
+            <div class="score-item">Time: <span id="timer">60</span>s</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="startBtn">🎮 Start Game</button>
+            <button class="btn restart" id="restartBtn" style="display: none;">🔄 Play Again</button>
+        </div>
+
+        <div class="game-area" id="gameArea">
+            <p style="color: #666; font-size: 1.5rem; margin-top: 200px;">Click "Start Game" to begin the birthday balloon fun!</p>
+        </div>
+
+        <a href="index.html" class="back-link">🏠 Back to Birthday Party</a>
+    </div>
+
+    <div class="celebration" id="celebration"></div>
+
+    <script>
+        class BalloonPopGame {
+            constructor() {
+                this.score = 0;
+                this.balloonsPopped = 0;
+                this.timeLeft = 60;
+                this.gameActive = false;
+                this.balloons = [];
+                this.gameInterval = null;
+                this.spawnInterval = null;
+                
+                this.gameArea = document.getElementById('gameArea');
+                this.scoreElement = document.getElementById('score');
+                this.poppedElement = document.getElementById('popped');
+                this.timerElement = document.getElementById('timer');
+                this.startBtn = document.getElementById('startBtn');
+                this.restartBtn = document.getElementById('restartBtn');
+                
+                this.balloonColors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+                this.popMessages = ['POP! 🎉', 'BOOM! ✨', 'YAY! 🎊', 'WOW! 🌟', 'AMAZING! 🎈', 'SUPER! 💫'];
+                
+                this.initEvents();
+            }
+            
+            initEvents() {
+                this.startBtn.addEventListener('click', () => this.startGame());
+                this.restartBtn.addEventListener('click', () => this.restartGame());
+            }
+            
+            startGame() {
+                this.gameActive = true;
+                this.score = 0;
+                this.balloonsPopped = 0;
+                this.timeLeft = 60;
+                this.balloons = [];
+                
+                this.gameArea.innerHTML = '';
+                this.updateDisplay();
+                
+                this.startBtn.style.display = 'none';
+                this.restartBtn.style.display = 'none';
+                
+                // Start game timer
+                this.gameInterval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.endGame();
+                    }
+                }, 1000);
+                
+                // Start spawning balloons
+                this.spawnInterval = setInterval(() => {
+                    if (this.gameActive) {
+                        this.spawnBalloon();
+                    }
+                }, 800);
+                
+                // Spawn initial balloons
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => this.spawnBalloon(), i * 200);
+                }
+            }
+            
+            spawnBalloon() {
+                const balloon = document.createElement('div');
+                balloon.className = `balloon ${this.balloonColors[Math.floor(Math.random() * this.balloonColors.length)]}`;
+                
+                // Random position within game area bounds
+                const maxX = this.gameArea.offsetWidth - 60;
+                const maxY = this.gameArea.offsetHeight - 80;
+                const x = Math.random() * maxX;
+                const y = Math.random() * maxY;
+                
+                balloon.style.left = x + 'px';
+                balloon.style.top = y + 'px';
+                balloon.style.animationDelay = Math.random() * 2 + 's';
+                balloon.style.animationDuration = (2 + Math.random() * 2) + 's';
+                
+                balloon.addEventListener('click', (e) => this.popBalloon(e, balloon));
+                
+                this.gameArea.appendChild(balloon);
+                this.balloons.push(balloon);
+                
+                // Remove balloon after 5 seconds if not popped
+                setTimeout(() => {
+                    if (balloon.parentNode) {
+                        this.gameArea.removeChild(balloon);
+                        const index = this.balloons.indexOf(balloon);
+                        if (index > -1) {
+                            this.balloons.splice(index, 1);
+                        }
+                    }
+                }, 5000);
+            }
+            
+            popBalloon(event, balloon) {
+                if (!this.gameActive) return;
+                
+                event.stopPropagation();
+                
+                // Add points
+                this.score += 10;
+                this.balloonsPopped++;
+                
+                // Create pop effect
+                const popEffect = document.createElement('div');
+                popEffect.className = 'pop-effect';
+                popEffect.textContent = this.popMessages[Math.floor(Math.random() * this.popMessages.length)];
+                popEffect.style.left = balloon.style.left;
+                popEffect.style.top = balloon.style.top;
+                
+                this.gameArea.appendChild(popEffect);
+                
+                // Remove balloon
+                this.gameArea.removeChild(balloon);
+                const index = this.balloons.indexOf(balloon);
+                if (index > -1) {
+                    this.balloons.splice(index, 1);
+                }
+                
+                // Remove pop effect after animation
+                setTimeout(() => {
+                    if (popEffect.parentNode) {
+                        this.gameArea.removeChild(popEffect);
+                    }
+                }, 1000);
+                
+                // Bonus time for good performance
+                if (this.balloonsPopped % 5 === 0) {
+                    this.timeLeft += 3;
+                    this.showBonusMessage('⏰ +3 Seconds Bonus!');
+                }
+                
+                // Special celebration for milestones
+                if (this.balloonsPopped === 6) {
+                    this.showBonusMessage('🎂 6 Balloons for 6 Years Old! 🎂');
+                    this.createConfetti();
+                }
+                
+                this.updateDisplay();
+            }
+            
+            showBonusMessage(message) {
+                const bonus = document.createElement('div');
+                bonus.className = 'pop-effect';
+                bonus.style.left = '50%';
+                bonus.style.top = '30%';
+                bonus.style.transform = 'translateX(-50%)';
+                bonus.style.color = '#4ecdc4';
+                bonus.style.fontSize = '1.5rem';
+                bonus.textContent = message;
+                
+                this.gameArea.appendChild(bonus);
+                
+                setTimeout(() => {
+                    if (bonus.parentNode) {
+                        this.gameArea.removeChild(bonus);
+                    }
+                }, 2000);
+            }
+            
+            createConfetti() {
+                const celebration = document.getElementById('celebration');
+                
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    confetti.style.animationDuration = (2 + Math.random()) + 's';
+                    
+                    celebration.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        if (confetti.parentNode) {
+                            celebration.removeChild(confetti);
+                        }
+                    }, 5000);
+                }
+            }
+            
+            endGame() {
+                this.gameActive = false;
+                clearInterval(this.gameInterval);
+                clearInterval(this.spawnInterval);
+                
+                // Remove remaining balloons
+                this.balloons.forEach(balloon => {
+                    if (balloon.parentNode) {
+                        this.gameArea.removeChild(balloon);
+                    }
+                });
+                this.balloons = [];
+                
+                // Show final score
+                let message = '';
+                if (this.balloonsPopped >= 20) {
+                    message = '🎉 AMAZING! You\'re a Balloon Popping Superstar! 🎉';
+                } else if (this.balloonsPopped >= 15) {
+                    message = '⭐ GREAT JOB! You popped so many balloons! ⭐';
+                } else if (this.balloonsPopped >= 10) {
+                    message = '🎈 WELL DONE! Keep practicing! 🎈';
+                } else {
+                    message = '🌟 GOOD TRY! Every balloon counts! 🌟';
+                }
+                
+                this.gameArea.innerHTML = `
+                    <div style="text-align: center; margin-top: 100px;">
+                        <h2 style="color: #ff6b6b; font-size: 2.5rem; margin-bottom: 20px;">Game Over!</h2>
+                        <p style="font-size: 1.5rem; color: #333; margin-bottom: 20px;">${message}</p>
+                        <p style="font-size: 1.3rem; color: #666;">Final Score: <strong>${this.score}</strong></p>
+                        <p style="font-size: 1.3rem; color: #666;">Balloons Popped: <strong>${this.balloonsPopped}</strong></p>
+                    </div>
+                `;
+                
+                this.restartBtn.style.display = 'inline-block';
+                
+                // Celebration confetti for good scores
+                if (this.balloonsPopped >= 15) {
+                    this.createConfetti();
+                }
+            }
+            
+            restartGame() {
+                this.restartBtn.style.display = 'none';
+                this.startBtn.style.display = 'inline-block';
+                this.gameArea.innerHTML = '<p style="color: #666; font-size: 1.5rem; margin-top: 200px;">Click "Start Game" to begin the birthday balloon fun!</p>';
+                this.score = 0;
+                this.balloonsPopped = 0;
+                this.timeLeft = 60;
+                this.updateDisplay();
+            }
+            
+            updateDisplay() {
+                this.scoreElement.textContent = this.score;
+                this.poppedElement.textContent = this.balloonsPopped;
+                this.timerElement.textContent = this.timeLeft;
+            }
+        }
+        
+        // Initialize game when page loads
+        window.addEventListener('load', () => {
+            new BalloonPopGame();
+        });
+    </script>
+</body>
+</html>
