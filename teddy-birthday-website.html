@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy 6th Birthday Teddy Rogers!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3);
+            background-size: 300% 300%;
+            animation: gradientShift 8s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .birthday-banner {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 3px solid #fff;
+            transform: rotate(-2deg);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .superhero-section {
+            margin-bottom: 15px;
+        }
+
+        .superhero-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid #fff;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            animation: superhero-float 3s ease-in-out infinite;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            padding: 5px;
+        }
+
+        @keyframes superhero-float {
+            0%, 100% { transform: translateY(0px) rotate(-2deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+        }
+
+        .main-title {
+            font-size: 4rem;
+            color: #ff6b6b;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+
+        .age-highlight {
+            font-size: 6rem;
+            color: #4ecdc4;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4);
+            display: inline-block;
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #333;
+            margin-top: 15px;
+        }
+
+        .content-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-10px) rotate(1deg);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .section h2 {
+            font-size: 2.2rem;
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .section p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #333;
+            text-align: center;
+        }
+
+        .countdown-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            margin-bottom: 30px;
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .countdown-item {
+            background: linear-gradient(135deg, #ff9ff3, #54a0ff);
+            border-radius: 15px;
+            padding: 15px;
+            min-width: 80px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .countdown-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .countdown-label {
+            font-size: 0.9rem;
+            color: white;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .balloons {
+            position: fixed;
+            top: -50px;
+            width: 100%;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .balloon {
+            position: absolute;
+            width: 40px;
+            height: 50px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: float-up 8s linear infinite;
+        }
+
+        .balloon:nth-child(1) { background: #ff6b6b; left: 10%; animation-delay: 0s; }
+        .balloon:nth-child(2) { background: #4ecdc4; left: 20%; animation-delay: 1s; }
+        .balloon:nth-child(3) { background: #45b7d1; left: 30%; animation-delay: 2s; }
+        .balloon:nth-child(4) { background: #96ceb4; left: 40%; animation-delay: 3s; }
+        .balloon:nth-child(5) { background: #feca57; left: 50%; animation-delay: 4s; }
+        .balloon:nth-child(6) { background: #ff9ff3; left: 60%; animation-delay: 5s; }
+        .balloon:nth-child(7) { background: #ff6b6b; left: 70%; animation-delay: 6s; }
+        .balloon:nth-child(8) { background: #4ecdc4; left: 80%; animation-delay: 7s; }
+
+        @keyframes float-up {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .footer h3 {
+            font-size: 1.8rem;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+
+        .footer p {
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .main-title { font-size: 2.5rem; }
+            .age-highlight { font-size: 4rem; }
+            .section h2 { font-size: 1.8rem; }
+            .countdown { gap: 10px; }
+            .countdown-number { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="balloons">
+        <div class="balloon"></div>
+        <div class="balloon"></div>
+        <div class="balloon"></div>
+        <div class="balloon"></div>
+        <div class="balloon"></div>
+        <div class="balloon"></div>
+        <div class="balloon"></div>
+        <div class="balloon"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="birthday-banner">
+                <div class="superhero-section">
+                    <img src="teddy-superhero.png" alt="Superhero Teddy" class="superhero-image">
+                </div>
+                <h1 class="main-title">Happy Birthday</h1>
+                <div class="age-highlight">6</div>
+                <h2 class="subtitle">Teddy Rogers is turning SIX!</h2>
+            </div>
+        </header>
+
+        <div class="countdown-container">
+            <h2 style="color: #ff6b6b; margin-bottom: 20px; font-size: 2rem;">Birthday Countdown!</h2>
+            <div class="countdown" id="countdown">
+                <div class="countdown-item">
+                    <div class="countdown-number" id="days">0</div>
+                    <div class="countdown-label">Days</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="hours">0</div>
+                    <div class="countdown-label">Hours</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="minutes">0</div>
+                    <div class="countdown-label">Minutes</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="seconds">0</div>
+                    <div class="countdown-label">Seconds</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-sections">
+            <div class="section">
+                <h2>🎉 Big Kid Alert! 🎉</h2>
+                <p>Teddy is officially turning SIX years old! That's six years of amazing adventures, big smiles, and being absolutely awesome. Get ready for the best birthday celebration ever!</p>
+            </div>
+
+            <div class="section">
+                <h2>🎂 Birthday Fun 🎂</h2>
+                <p>September 23rd, 2025 is going to be the most epic day! There will be cake, presents, games, and so much birthday magic. Teddy's sixth birthday is going to be unforgettable!</p>
+            </div>
+
+            <div class="section">
+                <h2>🌟 Six Years Strong 🌟</h2>
+                <p>From a tiny baby to a fantastic six-year-old, Teddy has grown so much! Every year brings new adventures, new friends, and new reasons to celebrate how special he is.</p>
+            </div>
+
+            <div class="section">
+                <h2>🎈 Party Time 🎈</h2>
+                <p>The birthday celebration is going to be amazing! With balloons floating everywhere, delicious cake, and all the people who love Teddy most, this day will be pure magic!</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <h3>Happy 6th Birthday, Teddy!</h3>
+            <p>Wishing you the most wonderful birthday filled with joy, laughter, and all your favorite things! 🎊</p>
+        </div>
+    </div>
+
+    <script>
+        // Birthday countdown timer
+        function updateCountdown() {
+            const birthdayDate = new Date('2025-09-23T00:00:00').getTime();
+            const now = new Date().getTime();
+            const distance = birthdayDate - now;
+
+            if (distance > 0) {
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById('days').textContent = days;
+                document.getElementById('hours').textContent = hours;
+                document.getElementById('minutes').textContent = minutes;
+                document.getElementById('seconds').textContent = seconds;
+            } else {
+                // Birthday has arrived!
+                document.getElementById('days').textContent = '0';
+                document.getElementById('hours').textContent = '0';
+                document.getElementById('minutes').textContent = '0';
+                document.getElementById('seconds').textContent = '0';
+                document.querySelector('.countdown-container h2').textContent = "🎉 IT'S TEDDY'S BIRTHDAY! 🎉";
+            }
+        }
+
+        // Update countdown every second
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // Add some interactive sparkles when clicking
+        document.addEventListener('click', function(e) {
+            createSparkle(e.clientX, e.clientY);
+        });
+
+        function createSparkle(x, y) {
+            const sparkle = document.createElement('div');
+            sparkle.innerHTML = '✨';
+            sparkle.style.position = 'fixed';
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            sparkle.style.fontSize = '20px';
+            sparkle.style.pointerEvents = 'none';
+            sparkle.style.zIndex = '1000';
+            sparkle.style.animation = 'sparkle 1s ease-out forwards';
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes sparkle {
+                    0% { transform: translateY(0) scale(1); opacity: 1; }
+                    100% { transform: translateY(-50px) scale(0); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => {
+                sparkle.remove();
+                style.remove();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
