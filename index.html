@@ -218,12 +218,14 @@
 
         .rocket {
             position: fixed;
-            width: 3px;
-            height: 20px;
-            background: linear-gradient(to top, transparent, white);
+            width: 5px;
+            height: 30px;
+            background: linear-gradient(to top, transparent, #ff6b6b, #ffd700);
+            box-shadow: 0 0 15px #ff6b6b, 0 0 25px #ffd700;
             pointer-events: none;
             z-index: 9998;
             animation: rocket-launch 0.8s ease-out forwards;
+            border-radius: 2px;
         }
 
         @keyframes rocket-launch {
