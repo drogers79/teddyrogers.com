@@ -191,6 +191,93 @@
             z-index: -1;
         }
 
+        .firework {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .firework-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            animation: firework-explode 1s ease-out forwards;
+        }
+
+        @keyframes firework-explode {
+            0% {
+                transform: translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y));
+                opacity: 0;
+            }
+        }
+
+        .rocket {
+            position: fixed;
+            width: 3px;
+            height: 20px;
+            background: linear-gradient(to top, transparent, white);
+            pointer-events: none;
+            z-index: 9998;
+            animation: rocket-launch 0.8s ease-out forwards;
+        }
+
+        @keyframes rocket-launch {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-400px);
+                opacity: 0;
+            }
+        }
+
+        .birthday-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            text-align: center;
+            animation: birthday-popup 1s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes birthday-popup {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .birthday-message h2 {
+            font-size: 3rem;
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .birthday-message p {
+            font-size: 1.5rem;
+            color: #4ecdc4;
+        }
+
         .balloon {
             position: absolute;
             width: 40px;
@@ -351,7 +438,7 @@
                 document.getElementById('hours').textContent = '0';
                 document.getElementById('minutes').textContent = '0';
                 document.getElementById('seconds').textContent = '0';
-                document.querySelector('.countdown-container h2').textContent = "🎉 IT'S TEDDY'S BIRTHDAY! 🎉";
+                document.querySelector('.countdown-container h2').textContent = "🎉 IT'S TEDDY'S BIRTHDAY TODAY! 🎉";
             }
         }
 
@@ -359,11 +446,69 @@
         updateCountdown();
         setInterval(updateCountdown, 1000);
 
-        // Add some interactive sparkles when clicking
+        // Fireworks function
+        function createFirework(x, y) {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#ff9f43'];
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            firework.style.left = x + 'px';
+            firework.style.top = y + 'px';
+            
+            // Create particles
+            const particleCount = 30;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'firework-particle';
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const velocity = 100 + Math.random() * 100;
+                const xVel = Math.cos(angle) * velocity;
+                const yVel = Math.sin(angle) * velocity;
+                
+                particle.style.setProperty('--x', xVel + 'px');
+                particle.style.setProperty('--y', yVel + 'px');
+                
+                firework.appendChild(particle);
+            }
+            
+            document.body.appendChild(firework);
+            
+            setTimeout(() => {
+                document.body.removeChild(firework);
+            }, 1000);
+        }
+
+        // Rocket launch before firework
+        function launchRocket(x, y) {
+            const rocket = document.createElement('div');
+            rocket.className = 'rocket';
+            rocket.style.left = x + 'px';
+            rocket.style.top = y + 'px';
+            
+            document.body.appendChild(rocket);
+            
+            setTimeout(() => {
+                createFirework(x, y - 400);
+                document.body.removeChild(rocket);
+            }, 800);
+        }
+
+        // Click/tap to create fireworks
         document.addEventListener('click', function(e) {
+            launchRocket(e.clientX, e.clientY);
             createSparkle(e.clientX, e.clientY);
         });
 
+        // Touch support for mobile
+        document.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            launchRocket(touch.clientX, touch.clientY);
+            createSparkle(touch.clientX, touch.clientY);
+        }, { passive: false });
+
+        // Original sparkle function
         function createSparkle(x, y) {
             const sparkle = document.createElement('div');
             sparkle.innerHTML = '✨';
@@ -391,6 +536,52 @@
                 style.remove();
             }, 1000);
         }
+
+        // Birthday celebration on page load!
+        window.addEventListener('load', function() {
+            // Show birthday message
+            const message = document.createElement('div');
+            message.className = 'birthday-message';
+            message.innerHTML = `
+                <h2>🎉 HAPPY BIRTHDAY TEDDY! 🎉</h2>
+                <p>You're 6 Years Old Today!</p>
+            `;
+            document.body.appendChild(message);
+            
+            // Remove message after 4 seconds
+            setTimeout(() => {
+                message.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(message);
+                }, 500);
+            }, 4000);
+            
+            // Launch multiple fireworks on load
+            const fireworkPositions = [
+                { x: window.innerWidth * 0.2, y: window.innerHeight * 0.3 },
+                { x: window.innerWidth * 0.5, y: window.innerHeight * 0.2 },
+                { x: window.innerWidth * 0.8, y: window.innerHeight * 0.3 },
+                { x: window.innerWidth * 0.35, y: window.innerHeight * 0.4 },
+                { x: window.innerWidth * 0.65, y: window.innerHeight * 0.4 }
+            ];
+            
+            fireworkPositions.forEach((pos, index) => {
+                setTimeout(() => {
+                    launchRocket(pos.x, pos.y);
+                }, index * 300);
+            });
+            
+            // Continue with random fireworks
+            setTimeout(() => {
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const randomX = Math.random() * window.innerWidth;
+                        const randomY = Math.random() * (window.innerHeight * 0.5);
+                        launchRocket(randomX, randomY);
+                    }, i * 400);
+                }
+            }, 2000);
+        });
     </script>
 </body>
 </html>
