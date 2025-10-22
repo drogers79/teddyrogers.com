@@ -3,11 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>TeddyCraft — Climb & Build</title>
+<title>TeddyCraft — Ride the Dragon</title>
 <style>
-  :root{
-    --ink:#e7eef7; --muted:#a8b2c7; --bg:#0b0f14; --panel:#141b22; --accent:#ff6b00;
-  }
+  :root{ --ink:#e7eef7; --muted:#a8b2c7; --bg:#0b0f14; --panel:#141b22; --accent:#ff6b00; }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Inter,Arial,sans-serif}
   #ui {position:fixed;inset:12px auto auto 12px; z-index:10; display:flex; gap:8px; align-items:center;}
@@ -19,29 +17,31 @@
   .stone{background:#6b6f7d}
   .wood{background:#8b5a2b}
   #help{position:fixed; right:12px; top:12px; z-index:10;}
-  #help details{background:rgba(0,0,0,.35);border:1px solid #223243;border-radius:10px;padding:8px 12px;color:var(--muted);max-width:420px}
+  #help details{background:rgba(0,0,0,.35);border:1px solid #223243;border-radius:10px;padding:8px 12px;color:var(--muted);max-width:460px}
   #pause{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.35); z-index:20}
   #pause.show{display:grid}
   #pause .card{background:var(--panel); border:1px solid #223243; border-radius:16px; padding:20px; text-align:center; max-width:420px}
   #pause button{background:var(--accent); border:none; color:#111; padding:10px 14px; border-radius:10px; font-weight:800; cursor:pointer}
-  canvas{display:block; width:100vw; height:100vh; image-rendering: pixelated; }
+  canvas{display:block; width:100vw; height:100vh; image-rendering: pixelated;}
+  .btn{background:var(--accent); padding:6px 10px; border-radius:8px; color:#111; font-weight:800; margin-left:8px}
 </style>
 </head>
 <body>
   <div id="ui">
-    <div class="badge">WASD / ⬅⬆⬇➡ to move · Space to jump · Hold into wall + ↑ to climb · Click to place · Right-click to remove · 1/2/3 to change block · P to pause</div>
+    <div class="badge">
+      Move: A/D · Jump: Space · Climb: into wall + ↑ · Place: Click · Remove: Right-click · 1/2/3 blocks · P pause
+      <span class="btn" id="centerBtn" title="Center camera on Teddy">Center</span>
+    </div>
   </div>
   <div id="help">
     <details>
-      <summary>Controls & Tips</summary>
+      <summary>Dragon Controls & Tips</summary>
       <ul>
-        <li><b>Move:</b> A/D or ⬅/➡</li>
-        <li><b>Jump:</b> Space (or W/↑)</li>
-        <li><b>Climb walls:</b> Hold toward a wall + Up; climb speed is slower than walking.</li>
-        <li><b>Place block:</b> Left click within reach (6 tiles).</li>
-        <li><b>Remove block:</b> Right click (or Shift+Left click).</li>
-        <li><b>Hotbar:</b> 1 Dirt · 2 Stone · 3 Wood</li>
-        <li><b>Save/Load:</b> World auto-saves to your browser.</li>
+        <li><b>Spawn Dragon:</b> G (if lost).</li>
+        <li><b>Mount / Dismount:</b> E (stand near dragon to mount).</li>
+        <li><b>While Mounted:</b> A/D to steer, <b>Space</b> to flap (gain lift), <b>Shift</b> to dash forward briefly.</li>
+        <li>Dragon ignores terrain while flying; landing auto-enables ground collisions.</li>
+        <li>World auto-saves to your browser.</li>
       </ul>
     </details>
   </div>
@@ -65,389 +65,465 @@
 <script>
 (() => {
   // ====== Config ======
-  const TILE = 24;                  // px per tile
-  const W = Math.floor(window.innerWidth / TILE);
-  const H = Math.floor(window.innerHeight / TILE);
-  const WORLD_W = Math.max(128, W + 32);
-  const WORLD_H = Math.max(80, H + 32);
-  const GRAVITY = 0.5;
-  const JUMP_VELOCITY = -9.5;
-  const MOVE_SPEED = 3.2;
-  const CLIMB_SPEED = 1.8;          // vertical climb speed
-  const MAX_FALL = 14;
-  const REACH = 6;                  // tiles distance for place/remove
+  const TILE=24, GRAVITY=0.5, JUMP=-9.5, RUN=3.2, CLIMB=1.8, MAX_FALL=14, REACH=6;
   const AIR=0, DIRT=1, STONE=2, WOOD=3;
-  const SAVE_KEY = "teddycraft_world_v1";
+  const SAVE_KEY="teddycraft_world_v2_dragon";
 
-  // ====== State ======
-  const canvas = document.getElementById("game");
-  const ctx = canvas.getContext("2d");
-  const off = document.createElement("canvas");
-  const offCtx = off.getContext("2d");
+  // Dragon constants
+  const DRAGON_FLAP = -0.9;         // per tick when flapping
+  const DRAGON_LIFT_DECAY = 0.02;   // how fast upward momentum bleeds
+  const DRAGON_MAX_UP = -6.5;
+  const DRAGON_MAX_DOWN = 8;
+  const DRAGON_SPEED = 3.0;         // steering speed
+  const DRAGON_DASH = 6.0;          // short forward burst
+  const DRAGON_DASH_TIME = 12;      // frames
+  const DRAGON_MOUNT_DIST = 1.6;    // tiles
+  const DRAGON_W=1.8, DRAGON_H=1.2; // body size in tiles
 
-  let scaleX=1, scaleY=1;
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    scaleX = 1; scaleY = 1;
-  }
+  // ====== Canvas & world ======
+  const canvas=document.getElementById("game");
+  const ctx=canvas.getContext("2d");
+  function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
   resize(); window.addEventListener("resize", resize);
 
-  // World grid
-  let world = new Uint8Array(WORLD_W * WORLD_H);
+  const W=Math.floor(window.innerWidth/TILE);
+  const H=Math.floor(window.innerHeight/TILE);
+  const WORLD_W=Math.max(128, W+32);
+  const WORLD_H=Math.max(80, H+32);
 
-  function idx(x,y){ return y*WORLD_W + x; }
-  function inBounds(x,y){ return x>=0 && y>=0 && x<WORLD_W && y<WORLD_H; }
+  let world=new Uint8Array(WORLD_W*WORLD_H);
+  const idx=(x,y)=>y*WORLD_W+x;
+  const inBounds=(x,y)=>x>=0&&y>=0&&x<WORLD_W&&y<WORLD_H;
 
-  function generateWorld() {
+  function generateWorld(){
     world.fill(AIR);
-    // Simple heightmap ground
-    let base = Math.floor(WORLD_H*0.7);
-    let height = Array(WORLD_W).fill(base);
-    let h = base;
-    for (let x=0; x<WORLD_W; x++){
-      // mild noise
-      h += (Math.random() < 0.5 ? -1 : 1) * (Math.random()<0.2?1:0);
-      h = Math.max(base-4, Math.min(base+3, h));
-      height[x]=h;
-      for (let y=h; y<WORLD_H; y++){
-        world[idx(x,y)] = (y>h+3) ? STONE : DIRT;
+    const base=Math.floor(WORLD_H*0.7);
+    let h=base;
+    for(let x=0;x<WORLD_W;x++){
+      h += (Math.random()<0.5?-1:1)*(Math.random()<0.2?1:0);
+      h=Math.max(base-4, Math.min(base+3,h));
+      for(let y=h;y<WORLD_H;y++){
+        world[idx(x,y)]=(y>h+3)?STONE:DIRT;
       }
     }
-    // sprinkle pillars
+    // wooden pillars
     for(let i=0;i<50;i++){
-      let x = 10 + Math.floor(Math.random()*(WORLD_W-20));
-      let y = height[x]-1;
-      let tall = 2 + Math.floor(Math.random()*6);
+      let x=10+Math.floor(Math.random()*(WORLD_W-20));
+      let y=h-1;
+      let tall=2+Math.floor(Math.random()*6);
       for(let t=0;t<tall;t++){
-        if (inBounds(x,y-t)) world[idx(x,y-t)] = WOOD;
+        if(inBounds(x,y-t)) world[idx(x,y-t)]=WOOD;
       }
     }
   }
 
-  function saveWorld(){
-    try {
-      localStorage.setItem(SAVE_KEY, JSON.stringify({
-        w: WORLD_W, h: WORLD_H,
-        data: Array.from(world),
-        player: {x:px, y:py}
-      }));
-    } catch(e){}
-  }
-  function loadWorld(){
-    try {
-      const raw = localStorage.getItem(SAVE_KEY);
-      if(!raw) return false;
-      const obj = JSON.parse(raw);
-      if (obj.w!==WORLD_W || obj.h!==WORLD_H) return false;
-      world = Uint8Array.from(obj.data);
-      px = obj.player?.x ?? px;
-      py = obj.player?.y ?? py;
-      return true;
-    } catch(e){ return false; }
-  }
-
-  // Player
-  let px = 10, py = 10;
-  let vx = 0, vy = 0;
-  let onGround = false;
-  let climbing = false;
-  let facing = 1;
+  // ====== Player ======
+  let px=10, py=10, vx=0, vy=0, onGround=false, climbing=false, facing=1;
 
   // Camera
-  let camX = 0, camY = 0;
+  let camX=0, camY=0;
 
   // Input
-  const keys = new Set();
-  let mouse = {x:0,y:0, gridX:0, gridY:0, left:false, right:false}
+  const keys=new Set(); let mouse={x:0,y:0}; let mLeft=false, mRight=false;
   window.addEventListener("keydown", e=>{
-    if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
-    keys.add(e.key.toLowerCase());
-    if (e.key === "p" || e.key==="P") togglePause();
-    if (e.key === "1") setBlock(DIRT);
-    if (e.key === "2") setBlock(STONE);
-    if (e.key === "3") setBlock(WOOD);
+    const k=e.key; const kl=k.toLowerCase();
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(k)) e.preventDefault();
+    keys.add(kl);
+    if(kl==="p") togglePause();
+    if(kl==="1") setBlock(DIRT);
+    if(kl==="2") setBlock(STONE);
+    if(kl==="3") setBlock(WOOD);
+    if(kl==="g") spawnDragon();              // spawn if lost
+    if(kl==="e") tryMountOrDismount();       // mount/dismount
   }, {passive:false});
   window.addEventListener("keyup", e=>keys.delete(e.key.toLowerCase()));
 
   canvas.addEventListener("mousemove", e=>{
-    const rect = canvas.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
+    const r=canvas.getBoundingClientRect();
+    mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top;
   });
   canvas.addEventListener("mousedown", e=>{
-    if (e.button===0) mouse.left=true;
-    if (e.button===2) mouse.right=true;
+    if(e.button===0) mLeft=true;
+    if(e.button===2) mRight=true;
+  });
+  window.addEventListener("mouseup", e=>{
+    if(e.button===0) mLeft=false;
+    if(e.button===2) mRight=false;
   });
   canvas.addEventListener("contextmenu", e=>e.preventDefault());
-  window.addEventListener("mouseup", e=>{
-    if (e.button===0) mouse.left=false;
-    if (e.button===2) mouse.right=false;
-  });
+  document.getElementById("centerBtn").onclick=()=>{ camX=px*TILE-canvas.width/2; camY=py*TILE-canvas.height/2; };
 
   // Hotbar selection UI
-  let currentBlock = DIRT;
+  let currentBlock=DIRT;
   function setBlock(t){
-    currentBlock = t;
+    currentBlock=t;
     document.querySelectorAll(".slot").forEach(el=>el.classList.remove("sel"));
-    const sel = document.querySelector(`.slot[data-type="${t}"]`);
-    if (sel) sel.classList.add("sel");
+    const el=document.querySelector(`.slot[data-type="${t}"]`); if(el) el.classList.add("sel");
   }
-  document.querySelectorAll(".slot").forEach(el=>{
-    el.addEventListener("click", ()=> setBlock(parseInt(el.dataset.type,10)));
-  });
+  document.querySelectorAll(".slot").forEach(el=>el.addEventListener("click",()=>setBlock(parseInt(el.dataset.type,10))));
 
   // Pause
-  let paused = false;
-  const pauseEl = document.getElementById("pause");
-  function togglePause(){
-    paused = !paused;
-    pauseEl.classList.toggle("show", paused);
-  }
-  document.getElementById("resumeBtn").onclick = togglePause;
-  document.getElementById("resetBtn").onclick = ()=>{
-    generateWorld();
-    px=10; py=10; vx=0; vy=0;
-    saveWorld();
-    togglePause();
+  let paused=false; const pauseEl=document.getElementById("pause");
+  function togglePause(){ paused=!paused; pauseEl.classList.toggle("show",paused); }
+  document.getElementById("resumeBtn").onclick=togglePause;
+  document.getElementById("resetBtn").onclick=()=>{ generateWorld(); resetPlayer(); resetDragon(); saveWorld(); togglePause(); };
+
+  function resetPlayer(){ px=10; py=10; vx=0; vy=0; onGround=false; }
+
+  // ====== Dragon ======
+  let dragon = {
+    x: 16, y: 12, vx: 0, vy: 0,
+    mounted: false,
+    facing: 1,
+    dashTimer: 0,
+    patrolDir: 1,          // when unmounted
+    wantsLand: false,      // auto-land after dismount if midair
+  };
+
+  function spawnDragon(){
+    // spawn near Teddy
+    dragon.x = px + 3;
+    dragon.y = Math.max(4, py - 2);
+    dragon.vx = dragon.vy = 0;
+    dragon.mounted = false; dragon.wantsLand=false; dragon.dashTimer=0; dragon.facing=1;
   }
 
-  // World init
+  function resetDragon(){ spawnDragon(); }
+
+  function tryMountOrDismount(){
+    const d=Math.hypot(dragon.x - px, dragon.y - py);
+    if(!dragon.mounted){
+      if(d <= DRAGON_MOUNT_DIST){
+        dragon.mounted=true;
+        // snap player onto dragon "saddle"
+        px = dragon.x; py = dragon.y - 0.1;
+        vx=vy=0;
+      }
+    } else {
+      // Dismount: place Teddy slightly behind/under the saddle
+      dragon.mounted=false;
+      px = dragon.x - 0.3*dragon.facing;
+      py = dragon.y + 0.7; // just below to avoid overlap
+      vx=0; vy=0.5;
+      // If in midair, request a soft land for dragon (so player doesn't drop from sky instantly)
+      if(!groundBelow(dragon.x, dragon.y)) dragon.wantsLand=true;
+    }
+  }
+
+  // ====== World helpers ======
+  function solidAt(x,y){
+    const tx=Math.floor(x), ty=Math.floor(y);
+    if(!inBounds(tx,ty)) return true;
+    const t=world[idx(tx,ty)];
+    return t!==AIR;
+  }
+  function groundBelow(x,y){
+    const ty=Math.floor(y + 0.6);
+    return solidAt(x-0.3,ty) || solidAt(x,ty) || solidAt(x+0.3,ty);
+  }
+
+  // ====== Save/Load ======
+  function saveWorld(){
+    try{
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        w: WORLD_W, h: WORLD_H,
+        data: Array.from(world),
+        player: {x:px,y:py},
+        dragon: {x:dragon.x,y:dragon.y,mounted:dragon.mounted}
+      }));
+    }catch(e){}
+  }
+  function loadWorld(){
+    try{
+      const raw=localStorage.getItem(SAVE_KEY);
+      if(!raw) return false;
+      const s=JSON.parse(raw);
+      if(s.w!==WORLD_W||s.h!==WORLD_H) return false;
+      world=Uint8Array.from(s.data);
+      px=s.player?.x ?? px; py=s.player?.y ?? py;
+      if(s.dragon){
+        dragon.x=s.dragon.x ?? dragon.x;
+        dragon.y=s.dragon.y ?? dragon.y;
+        dragon.mounted=!!s.dragon.mounted;
+      }
+      return true;
+    }catch(e){ return false; }
+  }
+
+  // ====== Initialization ======
   generateWorld();
-  loadWorld();
+  loadWorld() || spawnDragon();
 
-  // ====== Physics & Helpers ======
-  function solidAt(x, y) {
-    // x,y in world coordinates (floating). Convert to tile.
-    const tx = Math.floor(x);
-    const ty = Math.floor(y);
-    if (!inBounds(tx,ty)) return true; // treat out-of-bounds as solid
-    const t = world[idx(tx,ty)];
-    return t !== AIR;
+  // ====== Gameplay: placing/removing ======
+  function tileAtCursor(){
+    const tx=Math.floor((camX+mouse.x)/TILE);
+    const ty=Math.floor((camY+mouse.y)/TILE);
+    return {tx,ty};
   }
 
-  function collideAndSlide(px, py, vx, vy){
-    // Basic AABB of player is 0.8 x 0.95 tiles
-    const w = 0.8, h = 0.95;
-    let nx = px + vx * dt;
-    let ny = py + vy * dt;
+  function placeRemove(){
+    const {tx,ty}=tileAtCursor();
+    if(!inBounds(tx,ty)) return;
+    const dist=Math.hypot(tx - px, ty - py);
+    if(dist>REACH) return;
+
+    const shift = keys.has("shift");
+    if(mRight || (mLeft && shift)){
+      if(world[idx(tx,ty)]!==AIR){ world[idx(tx,ty)]=AIR; saveWorld(); }
+      mRight=false; return;
+    }
+    if(mLeft && world[idx(tx,ty)]===AIR){
+      // avoid placing inside player's body
+      const inside = (tx+0.5 > px-0.4 && tx+0.5 < px+0.4 && ty+0.5 > py-0.47 && ty+0.5 < py+0.47);
+      if(!inside){ world[idx(tx,ty)]=currentBlock; saveWorld(); }
+      mLeft=false;
+    }
+  }
+
+  // ====== Physics: player ======
+  function collideAndSlide(px0, py0, vx0, vy0){
+    const w=0.8, h=0.95;
+    let nx=px0 + vx0*dt, ny=py0 + vy0*dt;
 
     // Horizontal
-    if (vx > 0){
-      const right = Math.floor(nx + w/2);
-      if (solidAt(right, py - h/2) || solidAt(right, py) || solidAt(right, py + h/2)){
-        nx = right - (w/2) - 1e-6;
-        vx = 0;
+    if(vx0>0){
+      const right=Math.floor(nx + w/2);
+      if(solidAt(right, py0-h/2) || solidAt(right, py0) || solidAt(right, py0+h/2)){
+        nx=right - (w/2) - 1e-6; vx0=0;
       }
-    } else if (vx < 0){
-      const left = Math.floor(nx - w/2);
-      if (solidAt(left, py - h/2) || solidAt(left, py) || solidAt(left, py + h/2)){
-        nx = left + 1 + (w/2) + 1e-6;
-        vx = 0;
+    }else if(vx0<0){
+      const left=Math.floor(nx - w/2);
+      if(solidAt(left, py0-h/2) || solidAt(left, py0) || solidAt(left, py0+h/2)){
+        nx=left + 1 + (w/2) + 1e-6; vx0=0;
       }
     }
 
     // Vertical
-    if (vy > 0){
-      const bottom = Math.floor(ny + h/2);
-      if (solidAt(px - w/2, bottom) || solidAt(px, bottom) || solidAt(px + w/2, bottom)){
-        ny = bottom - (h/2) - 1e-6;
-        vy = 0;
-        onGround = true;
+    if(vy0>0){
+      const bottom=Math.floor(ny + h/2);
+      if(solidAt(px0-w/2, bottom) || solidAt(px0, bottom) || solidAt(px0+w/2, bottom)){
+        ny=bottom - (h/2) - 1e-6; vy0=0; onGround=true;
+      } else onGround=false;
+    }else if(vy0<0){
+      const top=Math.floor(ny - h/2);
+      if(solidAt(px0-w/2, top) || solidAt(px0, top) || solidAt(px0+w/2, top)){
+        ny=top + 1 + (h/2) + 1e-6; vy0=0;
+      }
+    }else{
+      const bottom=Math.floor(ny + h/2 + 0.05);
+      onGround = (solidAt(px0-w/2, bottom) || solidAt(px0, bottom) || solidAt(px0+w/2, bottom));
+    }
+
+    // Climbing
+    const leftP = keys.has("a")||keys.has("arrowleft");
+    const rightP= keys.has("d")||keys.has("arrowright");
+    const upP   = keys.has("w")||keys.has("arrowup");
+    const wallL = solidAt(Math.floor(px0 - w/2 - 0.05), Math.floor(py0));
+    const wallR = solidAt(Math.floor(px0 + w/2 + 0.05), Math.floor(py0));
+    climbing=false;
+    if(upP && ((leftP && wallL) || (rightP && wallR))){
+      vy0 = -CLIMB; climbing=true;
+    }
+
+    return {nx,ny,vx:vx0,vy:vy0};
+  }
+
+  // ====== Physics: dragon ======
+  function updateDragon(){
+    if(dragon.mounted){
+      // Control by player
+      const left = keys.has("a")||keys.has("arrowleft");
+      const right= keys.has("d")||keys.has("arrowright");
+      const flap = keys.has(" ")||keys.has("arrowup")||keys.has("w");
+      const dash = keys.has("shift");
+
+      dragon.vx = (left?-DRAGON_SPEED:0) + (right?DRAGON_SPEED:0);
+      if(dragon.vx!==0) dragon.facing = dragon.vx>0?1:-1;
+
+      // flight vertical
+      if(flap){
+        dragon.vy += DRAGON_FLAP;
+        if(dragon.vy < DRAGON_MAX_UP) dragon.vy = DRAGON_MAX_UP;
       } else {
-        onGround = false;
+        dragon.vy += 0.15; // gentle gravity while flying
+        if(dragon.vy > DRAGON_MAX_DOWN) dragon.vy = DRAGON_MAX_DOWN;
       }
-    } else if (vy < 0){
-      const top = Math.floor(ny - h/2);
-      if (solidAt(px - w/2, top) || solidAt(px, top) || solidAt(px + w/2, top)){
-        ny = top + 1 + (h/2) + 1e-6;
-        vy = 0;
+
+      // dash short burst
+      if(dash && dragon.dashTimer<=0){
+        dragon.dashTimer = DRAGON_DASH_TIME;
       }
+      if(dragon.dashTimer>0){
+        dragon.vx += DRAGON_DASH * dragon.facing * (dragon.dashTimer/DRAGON_DASH_TIME);
+        dragon.dashTimer--;
+      }
+
+      // Move (ignore world collisions while flying)
+      dragon.x += dragon.vx * dt;
+      dragon.y += dragon.vy * dt;
+
+      // Carry player
+      px = dragon.x;
+      py = dragon.y - 0.1;
+
     } else {
-      // when purely horizontal, update onGround probe
-      const bottom = Math.floor(ny + h/2 + 0.05);
-      onGround = (solidAt(px - w/2, bottom) || solidAt(px, bottom) || solidAt(px + w/2, bottom));
-    }
+      // Unmounted: simple patrol AI + gravity, but avoid getting stuck in terrain
+      const desired = dragon.patrolDir * 1.2;
+      dragon.vx += (desired - dragon.vx)*0.1;
+      dragon.vy += 0.15; // gentle gravity
 
-    // Climbing: allowed if pressing into a wall and up, and there is a wall adjacent.
-    const pressingLeft = keys.has("a") || keys.has("arrowleft");
-    const pressingRight = keys.has("d") || keys.has("arrowright");
-    const pressingUp = keys.has("w") || keys.has("arrowup");
-    const wallLeft = solidAt(Math.floor(px - w/2 - 0.05), Math.floor(py));
-    const wallRight = solidAt(Math.floor(px + w/2 + 0.05), Math.floor(py));
-    climbing = false;
-    if (pressingUp && ((pressingLeft && wallLeft) || (pressingRight && wallRight))) {
-      // If there's space above, allow climb
-      vy = -CLIMB_SPEED;
-      climbing = true;
-    }
-
-    return {nx, ny, vx, vy};
-  }
-
-  function placeOrRemove() {
-    // Convert mouse to world tile under cursor
-    const tx = Math.floor(mouseWorldX());
-    const ty = Math.floor(mouseWorldY());
-    if (!inBounds(tx,ty)) return;
-
-    const dist = Math.hypot(tx - px, ty - py);
-    if (dist > REACH) return;
-
-    const isShift = keys.has("shift");
-    const remove = mouse.right || (mouse.left && isShift);
-
-    if (remove) {
-      // Never remove 'out of world' and avoid removing below floor bounding area outside
-      if (world[idx(tx,ty)] !== AIR) {
-        world[idx(tx,ty)] = AIR;
-        saveWorld();
+      // Try to avoid walls: if about to collide, swap patrol direction and gain altitude slightly
+      const aheadX = dragon.x + Math.sign(dragon.vx)* (DRAGON_W/2 + 0.3);
+      const aheadY = dragon.y;
+      if(solidAt(aheadX, aheadY) || solidAt(aheadX, aheadY - 0.4) || solidAt(aheadX, aheadY + 0.4)){
+        dragon.patrolDir *= -1;
+        dragon.vx *= -0.5;
+        dragon.vy = Math.min(-2, dragon.vy); // hop up
       }
-      mouse.right = false; // one-shot
-      return;
-    }
 
-    if (mouse.left && !isShift) {
-      // avoid placing inside player body
-      const w = 0.8, h = 0.95;
-      const insidePlayer =
-        (tx+0.5 > px - w/2 && tx+0.5 < px + w/2) &&
-        (ty+0.5 > py - h/2 && ty+0.5 < py + h/2);
-      if (!insidePlayer && world[idx(tx,ty)]===AIR) {
-        world[idx(tx,ty)] = currentBlock;
-        saveWorld();
+      // Land softly if asked (post-dismount)
+      if(dragon.wantsLand){
+        // If there's ground below soon, descend
+        if(!groundBelow(dragon.x, dragon.y+0.2)){
+          dragon.vy = Math.min(dragon.vy+0.2, 2.8);
+        } else {
+          dragon.vy = 0;
+          dragon.wantsLand=false;
+        }
       }
-      mouse.left = false; // one-shot
+
+      dragon.x += dragon.vx * dt;
+      dragon.y += dragon.vy * dt;
     }
+
+    // Keep dragon within world bounds
+    dragon.x = Math.max(1, Math.min(WORLD_W-2, dragon.x));
+    dragon.y = Math.max(2, Math.min(WORLD_H-2, dragon.y));
   }
 
-  function mouseWorldX(){ return (camX + mouse.x) / TILE; }
-  function mouseWorldY(){ return (camY + mouse.y) / TILE; }
-
-  // ====== Render ======
-  function drawTile(t, x, y){
-    // x,y in tiles
-    const px = x*TILE - camX;
-    const py = y*TILE - camY;
-    switch (t) {
-      case DIRT:   ctx.fillStyle = "#7a4a2a"; break;
-      case STONE:  ctx.fillStyle = "#6b6f7d"; break;
-      case WOOD:   ctx.fillStyle = "#8b5a2b"; break;
-      default:     return;
-    }
-    ctx.fillRect(px, py, TILE, TILE);
-    // subtle variant noise
-    ctx.fillStyle = "rgba(0,0,0,0.08)";
-    ctx.fillRect(px, py, TILE, 3);
-  }
-
+  // ====== Rendering ======
   function drawWorld(){
     // visible bounds
-    const x0 = Math.max(0, Math.floor(camX / TILE) - 1);
-    const y0 = Math.max(0, Math.floor(camY / TILE) - 1);
-    const x1 = Math.min(WORLD_W, Math.ceil((camX + canvas.width)/TILE) + 1);
-    const y1 = Math.min(WORLD_H, Math.ceil((camY + canvas.height)/TILE) + 1);
-    for (let y=y0; y<y1; y++){
-      for (let x=x0; x<x1; x++){
-        const t = world[idx(x,y)];
-        if (t !== AIR) drawTile(t,x,y);
+    const x0 = Math.max(0, Math.floor(camX/TILE)-1);
+    const y0 = Math.max(0, Math.floor(camY/TILE)-1);
+    const x1 = Math.min(WORLD_W, Math.ceil((camX+canvas.width)/TILE)+1);
+    const y1 = Math.min(WORLD_H, Math.ceil((camY+canvas.height)/TILE)+1);
+    for(let y=y0;y<y1;y++){
+      for(let x=x0;x<x1;x++){
+        const t=world[idx(x,y)];
+        if(t===AIR) continue;
+        ctx.fillStyle = (t===DIRT)?"#7a4a2a":(t===STONE)?"#6b6f7d":"#8b5a2b";
+        ctx.fillRect(x*TILE-camX, y*TILE-camY, TILE, TILE);
+        ctx.fillStyle="rgba(0,0,0,0.08)"; ctx.fillRect(x*TILE-camX, y*TILE-camY, TILE, 3);
       }
     }
   }
 
   function drawPlayer(){
-    const w = TILE*0.8, h = TILE*0.95;
-    const x = px*TILE - camX - w/2;
-    const y = py*TILE - camY - h/2;
+    if(dragon.mounted) return; // hidden on saddle
+    const w=TILE*0.8, h=TILE*0.95;
+    const x=px*TILE-camX - w/2, y=py*TILE-camY - h/2;
     ctx.fillStyle = climbing ? "#ffd166" : "#4cc9f0";
-    ctx.fillRect(x, y, w, h);
-    // face
-    ctx.fillStyle = "#111";
-    const eyeY = y + h*0.35;
-    if (facing >= 0) {
-      ctx.fillRect(x + w*0.65, eyeY, 3, 3);
-    } else {
-      ctx.fillRect(x + w*0.3, eyeY, 3, 3);
-    }
+    ctx.fillRect(x,y,w,h);
+    ctx.fillStyle="#111";
+    const eyeY=y+h*0.35;
+    if(facing>=0) ctx.fillRect(x+w*0.65, eyeY, 3,3); else ctx.fillRect(x+w*0.3, eyeY, 3,3);
+  }
+
+  function drawDragon(){
+    const bx=dragon.x*TILE - camX;
+    const by=dragon.y*TILE - camY;
+    // Body
+    const bw=DRAGON_W*TILE, bh=DRAGON_H*TILE;
+    ctx.fillStyle = "#8ef0a9"; // minty green dragon
+    ctx.fillRect(bx - bw/2, by - bh/2, bw, bh);
+    // Head (front)
+    const headX = bx + (dragon.facing>0?bw/2:-bw/2);
+    ctx.fillStyle = "#5bd287";
+    ctx.fillRect(headX - (dragon.facing>0?0:12), by - 8, 12, 16);
+    // Wing
+    ctx.beginPath();
+    ctx.moveTo(bx, by - bh/2);
+    ctx.lineTo(bx - dragon.facing* (bw*0.6), by);
+    ctx.lineTo(bx, by + bh*0.2);
+    ctx.closePath();
+    ctx.fillStyle="rgba(142,240,169,0.65)";
+    ctx.fill();
+    // Rider seat (visual)
+    ctx.fillStyle="#111";
+    ctx.fillRect(bx - 6, by - 6, 12, 3);
   }
 
   function drawCursor(){
-    const tx = Math.floor(mouseWorldX());
-    const ty = Math.floor(mouseWorldY());
-    if (!inBounds(tx,ty)) return;
-    const dist = Math.hypot(tx - px, ty - py);
-    const pxl = tx*TILE - camX, pyl = ty*TILE - camY;
-    ctx.strokeStyle = dist <= REACH ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.25)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(pxl+0.5, pyl+0.5, TILE-1, TILE-1);
+    const tx=Math.floor((camX+mouse.x)/TILE);
+    const ty=Math.floor((camY+mouse.y)/TILE);
+    if(!inBounds(tx,ty)) return;
+    const dist=Math.hypot(tx - px, ty - py);
+    ctx.strokeStyle = dist<=REACH ? "rgba(255,255,255,0.95)":"rgba(255,255,255,0.25)";
+    ctx.lineWidth=2;
+    ctx.strokeRect(tx*TILE-camX+0.5, ty*TILE-camY+0.5, TILE-1, TILE-1);
   }
 
-  // ====== Game Loop ======
-  let last = performance.now();
-  let dt = 1/60;
-
+  // ====== Game loop ======
+  let last=performance.now(), dt=1/60;
   function step(ts){
-    const elapsed = Math.min(50, ts - last);
-    last = ts;
-    dt = elapsed / 16.6667; // normalize to ~60fps units
-
-    if (!paused) update();
+    const elapsed=Math.min(50, ts-last); last=ts; dt=elapsed/16.6667;
+    if(!paused) update();
     render();
     requestAnimationFrame(step);
   }
 
   function update(){
-    // Movement input
-    const left  = keys.has("a") || keys.has("arrowleft");
-    const right = keys.has("d") || keys.has("arrowright");
-    const up    = keys.has("w") || keys.has("arrowup");
-    const jump  = keys.has(" ") || up;
+    // Place/remove first (so it feels responsive)
+    placeRemove();
 
-    vx = 0;
-    if (left)  { vx -= MOVE_SPEED; facing = -1; }
-    if (right) { vx += MOVE_SPEED; facing =  1; }
-
-    // Gravity unless actively climbing
-    if (!climbing) {
-      vy += GRAVITY;
-      if (vy > MAX_FALL) vy = MAX_FALL;
+    // Player movement (ignored while mounted)
+    if(!dragon.mounted){
+      const left=keys.has("a")||keys.has("arrowleft");
+      const right=keys.has("d")||keys.has("arrowright");
+      const jump=keys.has(" ")||keys.has("w")||keys.has("arrowup");
+      vx=0; if(left){vx-=RUN; facing=-1;} if(right){vx+=RUN; facing=1;}
+      vy += GRAVITY; if(vy>MAX_FALL) vy=MAX_FALL;
+      if(jump && onGround){ vy=JUMP; onGround=false; }
+      const c=collideAndSlide(px,py,vx,vy); px=c.nx; py=c.ny; vx=c.vx; vy=c.vy;
     }
 
-    // Jump if grounded
-    if (jump && onGround) {
-      vy = JUMP_VELOCITY;
-      onGround = false;
-    }
+    // Dragon update
+    updateDragon();
 
-    // Resolve movement & collisions
-    const c = collideAndSlide(px, py, vx, vy);
-    px = c.nx; py = c.ny; vx = c.vx; vy = c.vy;
+    // Camera
+    const focusX = dragon.mounted ? dragon.x : px;
+    const focusY = dragon.mounted ? dragon.y : py;
+    camX += ((focusX*TILE - canvas.width/2) - camX)*0.12;
+    camY += ((focusY*TILE - canvas.height/2) - camY)*0.12;
+    camX=Math.max(0, Math.min(camX, WORLD_W*TILE - canvas.width));
+    camY=Math.max(0, Math.min(camY, WORLD_H*TILE - canvas.height));
 
-    // Place/remove
-    placeOrRemove();
-
-    // Camera follows
-    camX = px*TILE - canvas.width/2;
-    camY = py*TILE - canvas.height/2;
-    camX = Math.max(0, Math.min(camX, WORLD_W*TILE - canvas.width));
-    camY = Math.max(0, Math.min(camY, WORLD_H*TILE - canvas.height));
-
-    // Autosave occasionally
-    if ((Math.random()<0.01)) saveWorld();
+    // Occasionally autosave
+    if(Math.random()<0.01) saveWorld();
   }
 
   function render(){
-    // Background gradient-ish
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    const grd = ctx.createLinearGradient(0,0,0,canvas.height);
-    grd.addColorStop(0, "#0b0f14");
-    grd.addColorStop(1, "#081018");
-    ctx.fillStyle = grd;
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+    // BG
+    const grd=ctx.createLinearGradient(0,0,0,canvas.height);
+    grd.addColorStop(0,"#0b0f14"); grd.addColorStop(1,"#081018");
+    ctx.fillStyle=grd; ctx.fillRect(0,0,canvas.width,canvas.height);
 
     drawWorld();
+    drawDragon();
     drawPlayer();
     drawCursor();
+
+    // Mount hint
+    const d=Math.hypot(dragon.x - px, dragon.y - py);
+    if(!dragon.mounted && d <= DRAGON_MOUNT_DIST+0.2){
+      ctx.fillStyle="rgba(0,0,0,0.55)";
+      ctx.fillRect(canvas.width/2-90, 28, 180, 28);
+      ctx.fillStyle="#fff";
+      ctx.font="bold 14px system-ui,Segoe UI,Roboto,Inter,Arial";
+      ctx.textAlign="center";
+      ctx.fillText("Press E to ride the dragon", canvas.width/2, 47);
+    }
   }
 
   requestAnimationFrame(step);
