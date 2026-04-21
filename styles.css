@@ -457,3 +457,65 @@ ul   { list-style: none; }
   .activity__body { padding: 24px 20px; }
   .hero__title { font-size: 3rem; }
 }
+
+/* ── ARCHIVE CARDS ── */
+.archive-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+.archive-card {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: var(--radius);
+  padding: 36px;
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+  transition: background .25s;
+}
+.archive-card:hover { background: rgba(255,255,255,.13); }
+.archive-card__stamp {
+  flex-shrink: 0;
+  width: 90px; height: 90px;
+  border: 3px solid rgba(255,255,255,.35);
+  border-radius: 50%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  transform: rotate(-8deg);
+  padding: 8px;
+}
+.archive-card__stamp .stamp__year {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+.archive-card__stamp .stamp__text {
+  font-family: var(--font-head);
+  font-size: .5rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: var(--stone);
+  margin-top: 4px;
+  line-height: 1.3;
+}
+.archive-card__body h3 {
+  font-family: var(--font-head);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  line-height: 1.15;
+}
+.archive-card__body p {
+  font-size: .95rem;
+  line-height: 1.65;
+  color: rgba(255,255,255,.7);
+}
+@media (max-width: 700px) {
+  .archive-cards { grid-template-columns: 1fr; }
+  .archive-card { flex-direction: column; gap: 16px; }
+}
