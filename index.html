@@ -1,102 +1,263 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Teddy's Fall Adventures 🎃🍁</title>
-  <meta name="description" content="Teddy's Fall & Halloween Adventure — pumpkins, costumes, forest courses, and big smiles.">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teddy Rogers — Winter & Spring Adventures</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <nav>
-    <div class="container nav-inner">
-      <div class="logo">
-        <img src="favicon.svg" alt="pumpkin icon" width="28" height="28">
-        Teddy's Adventures <span>Fall / Halloween</span>
-      </div>
-      <div class="badge">🍂 Cozy vibes · 👻 Spooky fun · 🧗 Adventure</div>
-    </div>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <a class="nav__logo" href="#">TR</a>
+    <button class="nav__burger" id="burger" aria-label="Menu">&#9776;</button>
+    <ul class="nav__links" id="navLinks">
+      <li><a href="#about">About</a></li>
+      <li><a href="#winter">Winter</a></li>
+      <li><a href="#spring">Spring</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#archive" class="nav__archive">Archive</a></li>
+    </ul>
   </nav>
 
+  <!-- HERO -->
   <header class="hero">
-    <div class="pumpkins"></div>
-    <div class="container">
-      <div class="hero-card">
-        <div>
-          <div class="kicker">🎃 New Season</div>
-          <h1>Fall &amp; Halloween Adventures</h1>
-          <p>Crunchy leaves, goofy faces, spooky masks, and forest courses—Teddy &amp; crew are in full adventure mode. Explore highlights below and enjoy the gallery!</p>
-          <div style="display:flex;gap:10px;margin-top:14px">
-            <a class="btn" href="#gallery">See the Gallery</a>
-            <span class="tag">📍 Williamsburg, VA</span>
-            <span class="tag">🍁 2025</span>
-          </div>
-        </div>
-        <img src="assets/images/IMG_1425.JPEG" alt="Teddy smiling selfie with dad">
-      </div>
+    <div class="hero__img-wrap">
+      <img src="assets/photos/sledding-1.jpg" alt="Teddy sledding" class="hero__img">
+      <div class="hero__overlay"></div>
+    </div>
+    <div class="hero__content">
+      <p class="hero__eyebrow">The Adventures of</p>
+      <h1 class="hero__title">Teddy Rogers</h1>
+      <p class="hero__sub">Winter &amp; Spring 2025&ndash;2026</p>
+      <a href="#winter" class="btn btn--hero">Explore the Adventures</a>
     </div>
   </header>
 
-  <main class="container">
-    <section class="section">
-      <div class="grid">
-        <div class="card" style="grid-column: span 7;">
-          <img src="assets/images/IMG_1542.JPEG" alt="Front yard Halloween setup">
-          <div class="pad">
-            <h3>Spooky Yard Crew</h3>
-            <p class="small muted">Skeletons, ghosts, and a mysterious black cat. Teddy and Lena helped with the decor—maximum silliness required.</p>
-          </div>
+  <!-- ABOUT -->
+  <section class="section about" id="about">
+    <div class="container about__grid">
+      <div class="about__photo-wrap">
+        <img src="assets/photos/teddy-dad.jpg" alt="Teddy and Dad" class="about__photo">
+        <div class="about__badge">Age 6</div>
+      </div>
+      <div class="about__text">
+        <span class="eyebrow">Meet the Explorer</span>
+        <h2>Hey, I'm Teddy!</h2>
+        <p>Six years old and already unstoppable. I love sledding at full speed, climbing things I probably shouldn't, exploring the woods with my sister, and eating gingerbread houses before they're finished. Whether there's snow on the ground or flowers coming up, I'm outside finding the next adventure.</p>
+        <p>This is my winter and spring &mdash; unfiltered, uncensored, and definitely a little messy.</p>
+        <div class="about__facts">
+          <div class="fact"><span class="fact__icon">&#x1F6F7;</span><span>Sled champion</span></div>
+          <div class="fact"><span class="fact__icon">&#x1F332;</span><span>Tree climber</span></div>
+          <div class="fact"><span class="fact__icon">&#x26F8;</span><span>Ice skater</span></div>
+          <div class="fact"><span class="fact__icon">&#x1F36A;</span><span>Gingerbread destroyer</span></div>
         </div>
-        <div class="card" style="grid-column: span 5;">
-          <img src="assets/images/IMG_1490.JPEG" alt="Masks and roaring pose">
-          <div class="pad">
-            <h3>Masks On, Roar Mode</h3>
-            <p class="small muted">Practice your best monster face. Extra points for volume.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2 style="margin:0 0 12px">Adventure Clip</h2>
-      <p class="small muted" style="margin-top:0">A quick look at the action from the season.</p>
-      <!-- Drop IMG_1553.MP4 into assets/video/ to enable -->
-      <div class="video card">
-        <video controls preload="metadata" style="width:100%;height:100%">
-          <source src="assets/video/IMG_1553.MP4" type="video/mp4">
-        </video>
-      </div>
-      <div class="video card" style="margin-top:20px">
-  <video controls preload="metadata" style="width:100%;height:100%">
-    <source src="assets/video/IMG_1571.MP4" type="video/mp4">
-  </video>
-</div>
-    </section>
-
-    <section id="gallery" class="section">
-      <h2 style="margin:0 0 12px">Photo Gallery</h2>
-      <p class="small muted" style="margin-top:0">Scroll through snapshots from the fall—tree courses, costumes, and big grins.</p>
-      <div class="gallery">
-        <figure class="card"><img src="assets/images/IMG_1425.JPEG" alt="Teddy fall adventure photo 1"></figure>
-        <figure class="card"><img src="assets/images/IMG_1490.JPEG" alt="Teddy fall adventure photo 2"></figure>
-        <figure class="card"><img src="assets/images/IMG_1495.JPEG" alt="Teddy fall adventure photo 3"></figure>
-        <figure class="card"><img src="assets/images/IMG_1542.JPEG" alt="Teddy fall adventure photo 4"></figure>
-        <figure class="card"><img src="assets/images/IMG_1576.JPEG" alt="Teddy fall adventure photo 5"></figure>
-        <figure class="card"><img src="assets/images/IMG_1577.JPEG" alt="Teddy fall adventure photo 6"></figure>
-        <figure class="card"><img src="assets/images/IMG_1664.JPEG" alt="Teddy fall adventure photo 7"></figure>
-        <figure class="card"><img src="assets/images/IMG_1671.JPEG" alt="Teddy fall adventure photo 8"></figure>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="container">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-        <small class="muted">© 2025 Teddy Rogers</small>
-        <small class="muted">Made with 🍂 and ☕ by Dad</small>
       </div>
     </div>
+  </section>
+
+  <!-- WINTER -->
+  <section class="section season season--winter" id="winter">
+    <div class="season__header">
+      <div class="season__header-inner container">
+        <span class="eyebrow eyebrow--light">The Cold Months</span>
+        <h2 class="season__title">Winter Adventures</h2>
+        <p class="season__desc">When the snow came, Teddy was already in his boots. No hesitation, no warm-up lap &mdash; just full send down every hill in sight.</p>
+      </div>
+    </div>
+    <div class="container activities">
+
+      <article class="activity activity--feature fade-in">
+        <div class="activity__photos activity__photos--duo">
+          <img src="assets/photos/sledding-2.jpg" alt="Teddy sledding fast">
+          <img src="assets/photos/sledding-4.jpg" alt="Family sledding">
+        </div>
+        <div class="activity__body">
+          <span class="activity__tag">Snow Day</span>
+          <h3>Sledding Season</h3>
+          <p>Belly-down, full speed, giant grin. Teddy owned the hill this winter &mdash; and convinced the whole family to join him. By the end of the day there wasn't a dry pair of gloves in the house.</p>
+        </div>
+      </article>
+
+      <div class="activity-row">
+        <article class="activity fade-in">
+          <div class="activity__photos">
+            <img src="assets/photos/snow-pile-1.jpg" alt="Teddy on snow pile">
+          </div>
+          <div class="activity__body">
+            <span class="activity__tag">Snow Conquering</span>
+            <h3>King of the Mountain</h3>
+            <p>Found the biggest snow pile in the neighborhood and immediately climbed it. Red coat, blue hat, yellow boots &mdash; full winter regalia.</p>
+          </div>
+        </article>
+
+        <article class="activity fade-in">
+          <div class="activity__photos">
+            <img src="assets/photos/sledding-3.jpg" alt="Teddy with sled">
+          </div>
+          <div class="activity__body">
+            <span class="activity__tag">Snow Explorer</span>
+            <h3>Post-Run Swagger</h3>
+            <p>Yellow boots dragging the sled back up the hill for another run. The definition of determined. He did this approximately forty times in a row.</p>
+          </div>
+        </article>
+
+        <article class="activity fade-in">
+          <div class="activity__photos">
+            <img src="assets/photos/ice-skating.jpg" alt="Teddy ice skating">
+          </div>
+          <div class="activity__body">
+            <span class="activity__tag">Ice Skating</span>
+            <h3>Hitting the Rink</h3>
+            <p>Blue skates, red jacket, helmet buckled tight &mdash; Teddy took to the Yorktown ice rink and didn't fall nearly as much as anyone expected.</p>
+          </div>
+        </article>
+      </div>
+
+      <article class="activity activity--feature activity--reverse fade-in">
+        <div class="activity__photos">
+          <img src="assets/photos/gingerbread.jpg" alt="Building gingerbread house">
+        </div>
+        <div class="activity__body">
+          <span class="activity__tag">Holiday Traditions</span>
+          <h3>Gingerbread House Construction</h3>
+          <p>The plan was to build it and then eat it later. The reality was a simultaneous build-and-eat operation that left icing everywhere and one very happy six-year-old. The house was structurally compromised before it was finished.</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- SPRING -->
+  <section class="section season season--spring" id="spring">
+    <div class="season__header">
+      <div class="season__header-inner container">
+        <span class="eyebrow eyebrow--dark">When the World Woke Up</span>
+        <h2 class="season__title season__title--dark">Spring Adventures</h2>
+        <p class="season__desc season__desc--dark">Snow melted, boots came off, and Teddy headed straight for the trees. Spring meant more daylight, muddier shoes, and bigger ambitions.</p>
+      </div>
+    </div>
+    <div class="container activities">
+
+      <article class="activity activity--feature fade-in">
+        <div class="activity__photos activity__photos--duo">
+          <img src="assets/photos/tree-climbing.jpg" alt="Teddy climbing a tree">
+          <img src="assets/photos/woods-exploring.jpg" alt="Exploring a stick fort">
+        </div>
+        <div class="activity__body">
+          <span class="activity__tag">Outdoor Exploration</span>
+          <h3>Into the Wild</h3>
+          <p>From scaling the neighborhood trees to crawling inside a massive stick fort in the woods &mdash; spring exploration was serious business. Every branch was a ladder, every trail a new discovery.</p>
+        </div>
+      </article>
+
+      <div class="activity-row">
+        <article class="activity fade-in">
+          <div class="activity__photos">
+            <img src="assets/photos/easter-hunt.jpg" alt="Easter egg hunt">
+          </div>
+          <div class="activity__body">
+            <span class="activity__tag">Spring Traditions</span>
+            <h3>Easter Egg Hunt</h3>
+            <p>Running full speed across the field with his crew on a perfect sunny spring morning. Competitive doesn't even begin to cover it.</p>
+          </div>
+        </article>
+
+        <article class="activity fade-in">
+          <div class="activity__photos">
+            <img src="assets/photos/parachute.jpg" alt="Parachute at field day">
+          </div>
+          <div class="activity__body">
+            <span class="activity__tag">Field Day</span>
+            <h3>Parachute Time</h3>
+            <p>Grabbed the edge of the giant parachute and gave it everything he had. School field day: Teddy's favorite day of the year.</p>
+          </div>
+        </article>
+
+        <article class="activity fade-in">
+          <div class="activity__photos">
+            <img src="assets/photos/bubbles.jpg" alt="Blowing bubbles">
+          </div>
+          <div class="activity__body">
+            <span class="activity__tag">Spring Fun</span>
+            <h3>Bubble Master</h3>
+            <p>Completely soaked, bright yellow shirt, eyes closed mid-blow &mdash; making the biggest bubble he could at the outdoor picnic tables. Very serious work.</p>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="section gallery-section" id="gallery">
+    <div class="container">
+      <span class="eyebrow">The Full Story</span>
+      <h2>Photo Gallery</h2>
+      <p class="gallery-section__sub">A season in pictures &mdash; the big moments and the candid ones.</p>
+      <div class="gallery">
+        <div class="gallery__item gallery__item--tall fade-in"><img src="assets/photos/snow-pile-2.jpg" alt="Teddy and sister on snow pile"></div>
+        <div class="gallery__item fade-in"><img src="assets/photos/sledding-1.jpg" alt="Teddy sledding"></div>
+        <div class="gallery__item fade-in"><img src="assets/photos/ice-skating.jpg" alt="Ice skating"></div>
+        <div class="gallery__item gallery__item--wide fade-in"><img src="assets/photos/family-porch.jpg" alt="Family on porch"></div>
+        <div class="gallery__item fade-in"><img src="assets/photos/easter-hunt.jpg" alt="Easter egg hunt"></div>
+        <div class="gallery__item gallery__item--tall fade-in"><img src="assets/photos/tree-climbing.jpg" alt="Tree climbing"></div>
+        <div class="gallery__item fade-in"><img src="assets/photos/teddy-red-hat.jpg" alt="Teddy in red hat"></div>
+        <div class="gallery__item fade-in"><img src="assets/photos/bubbles.jpg" alt="Bubbles"></div>
+        <div class="gallery__item gallery__item--wide fade-in"><img src="assets/photos/woods-exploring.jpg" alt="Exploring the woods"></div>
+        <div class="gallery__item fade-in"><img src="assets/photos/gingerbread.jpg" alt="Gingerbread house"></div>
+        <div class="gallery__item fade-in"><img src="assets/photos/parachute.jpg" alt="Field day parachute"></div>
+        <div class="gallery__item gallery__item--wide fade-in"><img src="assets/photos/teddy-family.jpg" alt="Teddy and family"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARCHIVE -->
+  <section class="section archive-section" id="archive">
+    <div class="container archive-section__inner">
+      <div class="archive-section__text">
+        <span class="eyebrow eyebrow--light">Where it all started</span>
+        <h2>The Birthday Archive</h2>
+        <p>Before the adventures, there was the birthday. Teddy's original site &mdash; made to celebrate turning 6 &mdash; lives on here. Fireworks, balloons, and a spinning &ldquo;6&rdquo; included.</p>
+        <a href="teddy-birthday-website.html" class="btn btn--outline">Visit the Birthday Site &rarr;</a>
+      </div>
+      <div class="archive-section__stamp">
+        <div class="stamp">
+          <p class="stamp__year">2025</p>
+          <p class="stamp__text">BIRTHDAY<br>EDITION</p>
+          <p class="stamp__age">Age 6</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p class="footer__logo">TR</p>
+      <p class="footer__tagline">Teddy Rogers &middot; Age 6 &middot; Always Adventuring</p>
+      <p class="footer__copy">&copy; 2026 &middot; Made with love by Dad</p>
+    </div>
   </footer>
+
+  <script>
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('nav--scrolled', window.scrollY > 40);
+    });
+    const burger = document.getElementById('burger');
+    const navLinks = document.getElementById('navLinks');
+    burger.addEventListener('click', () => navLinks.classList.toggle('nav__links--open'));
+    navLinks.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => navLinks.classList.remove('nav__links--open'));
+    });
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+  </script>
 </body>
 </html>
